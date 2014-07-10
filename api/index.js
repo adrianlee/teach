@@ -1,4 +1,5 @@
 var db = require("./db");
+var Hapi = require('hapi');
 var Bcrypt = require('bcrypt');
 var API = {};
 
@@ -9,6 +10,9 @@ API.routes = [
   // Account
   { method: 'GET', path: '/api/login', config: { auth: 'basic', handler: login } },
   { method: 'POST', path: '/api/register', handler: register },
+  { method: 'GET', path: '/api/account', config: { auth: 'basic', handler: getAccount } },
+  { method: 'PUT', path: '/api/account', config: { auth: 'basic', handler: updateAccount } },
+  { method: 'DELETE', path: '/api/account', config: { auth: 'basic', handler: deleteAccount } },
 
   // Profile Resource
   { method: 'GET', path: '/api/profile', handler: getProfile },
@@ -17,8 +21,8 @@ API.routes = [
   { method: 'DELETE', path: '/api/profile', handler: deleteProfile },
 
   // Admin Resources
-  { method: 'GET', path: '/api/accounts', handler: listAccount },
-  { method: 'GET', path: '/api/profiles', handler: listProfile }
+  { method: 'GET', path: '/api/accounts', handler: listAccounts },
+  { method: 'GET', path: '/api/profiles', handler: listProfiles }
 ];
 
 API.basicValidateFunc = function (email, password, callback) {
@@ -30,6 +34,7 @@ API.basicValidateFunc = function (email, password, callback) {
         return callback(null, false);
       } else {
         Bcrypt.compare(password, account.password, function (err, isValid) {
+          // if valid pass credentials to request handler. access via req.auth.credentials
           callback(err, isValid, { username: account.username, email: account.email, profiles: account.profiles });
         });
       }
@@ -47,17 +52,19 @@ function login(req, reply) {
 function register(req, reply) {
   var email = req.payload['email'];
   var password = req.payload['password'];
+  
+  if (!email || !password) {
+    return reply(Hapi.error.badRequest("Enter valid email and password"));
+  }
 
-  db.Account.findOne({ email: email }, findUserCallback);
-
-  function findUserCallback(err, account) {
-    if (err) throw err;
+  db.Account.findOne({ email: email }, function findUserCallback(err, account) {
+    if (err) return reply(Hapi.error.badRequest(err));
     if (account) {
-      return reply("user already exists");
+      return reply(Hapi.error.badRequest("Account email already exists"));
     } else {
-      return createAccount();
+      createAccount();
     }
-  };
+  });
 
   function createAccount() {
     var account = new db.Account();
@@ -65,13 +72,38 @@ function register(req, reply) {
 
     Bcrypt.hash(password, 8, function(err, hash) {
       // Store hash in your password DB.
-      if (err) throw err;
+      if (err) return reply(Hapi.error.badRequest(err));
       account.password = hash;
       account.save(function (err, savedAccount) {
-        return reply(savedAccount);
+        if (err) return reply(Hapi.error.badRequest(err));
+        return reply("Account registered");
       });
     });
   };
+}
+
+function getAccount(req, reply) {
+  var getAccountWithEmail = req.auth.credentials.email;
+  db.Account.findOne({ email: getAccountWithEmail }).exec(function (err, doc) {
+    if (err) return reply(Hapi.error.badRequest(err));
+    reply(doc);
+  });
+}
+
+function updateAccount(req, reply) {
+  var getAccountWithEmail = req.auth.credentials.email;
+  db.Account.findOneAndUpdate({ email: getAccountWithEmail }, req.payload).exec(function (err, doc) {
+    if (err) return reply(Hapi.error.badRequest(err));
+    reply(doc);
+  });
+}
+
+function deleteAccount(req, reply) {
+  var deleteAccountWithEmail = req.auth.credentials.email;
+  db.Account.findOneAndRemove({ email: deleteAccountWithEmail }).exec(function (err, doc) {
+    if (err) return reply(Hapi.error.badRequest(err));
+    reply("Success");
+  });
 }
 
 function getProfile(req, reply) {
@@ -90,16 +122,16 @@ function deleteProfile(req, reply) {
   reply("not implemented")
 }
 
-function listAccount(req, reply) {
+function listAccounts(req, reply) {
   db.Account.find().exec(function (err, accounts) {
-    if (err) throw err;
+    if (err) return reply(Hapi.error.badRequest(err));
     reply(accounts);
   });
 }
 
-function listProfile(req, reply) {
+function listProfiles(req, reply) {
   db.Profile.find().exec(function (err, profiles) {
-    if (err) throw err;
+    if (err) return reply(Hapi.error.badRequest(err));
     reply(profiles);
   });
 }

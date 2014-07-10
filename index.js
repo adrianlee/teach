@@ -5,28 +5,38 @@ var lout = require("lout");
 var API = require("./api");
 
 var serverOptions = { cors: true, security: true };
-var server = new Hapi.Server("localhost", 8000, serverOptions);
 
-// Register plugins
-server.pack.register({
-  plugin: require('hapi-auth-basic')
-}, function (err) {
-  if (err) throw err;
-  server.auth.strategy('basic', 'basic', { validateFunc: API.basicValidateFunc });
-});
+if (!module.parent) {
+  start();
+}
 
-server.pack.register({ plugin: lout }, function(err) {
+module.exports = function (port) {
+  start(port);
+};
+
+function start(port) {
+  var server = new Hapi.Server("localhost", port || 8000, serverOptions);
+
+  // Register plugins
+  server.pack.register({
+    plugin: require('hapi-auth-basic')
+  }, function (err) {
     if (err) throw err;
-});
+    server.auth.strategy('basic', 'basic', { validateFunc: API.basicValidateFunc });
+  });
 
-// Site Routes
-server.route({ method: "GET", path: "/", handler: { file: "./site/index.html" } });
-server.route({ method: "GET", path: "/static/{path*}", handler: { directory: { path: "./site", listing: false, index: false } } });
+  server.pack.register({ plugin: lout }, function(err) {
+      if (err) throw err;
+  });
 
-// API Routes
-server.route(API.routes);
+  // Site Routes
+  server.route({ method: "GET", path: "/", handler: { file: "./site/index.html" } });
+  server.route({ method: "GET", path: "/static/{path*}", handler: { directory: { path: "./site", listing: false, index: false } } });
 
-// Start Server
-server.start(function() {
-  console.log("Hapi server started @", server.info.uri);
-});
+  // API Routes
+  server.route(API.routes);
+
+  server.start(function() {
+    console.log("Hapi server started @", server.info.uri);
+  });
+}

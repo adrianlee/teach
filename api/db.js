@@ -6,7 +6,7 @@ mongoose.set('debug', true)
 var accountSchema = new Schema({
   email: { type: String, unique: true, required: true, trim: true },
   username: { type: String, trim: true },
-  password: { type: String, trim: true, select: false },
+  password: { type: String, required: true, trim: true, select: false },
   profiles: [profileSchema]
 });
 
