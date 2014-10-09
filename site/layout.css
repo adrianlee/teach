@@ -1,0 +1,50 @@
+body {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 14px;
+}
+
+.sidebar {
+	position: fixed;
+	width: 220px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	background-color: #ededed;
+	color: #333;
+	border-right: 1px solid #ddd;
+}
+
+.sidebar .header {
+	padding: 10px 20px;
+	font-size: 1.5em;
+	background: #ddd;
+	font-weight: 600;
+}
+
+.sidebar .menu {
+	padding: 10px 20px;
+	font-size: 1em;
+}
+
+.sidebar .menu-category {
+	font-weight: 600;
+}
+
+.sidebar ul {
+	list-style: none;
+	padding: 5px 0;
+}
+
+.sidebar li {
+	padding: 2px 0;
+	font-size: 1em;
+}
+
+.content {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 220px;
+	right: 0;
+	padding: 20px;
+}

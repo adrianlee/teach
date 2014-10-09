@@ -7,9 +7,11 @@ API.routes = [
   // General
 	{ method: 'GET', path: '/api', handler: ping },
 
-  // Account
-  { method: 'GET', path: '/api/login', config: { auth: 'basic', handler: login } },
+  // Login & Register
+  { method: 'GET', path: '/api/signin', config: { auth: 'basic', handler: signin } },
   { method: 'POST', path: '/api/register', handler: register },
+  
+  // Account Resource
   { method: 'GET', path: '/api/account', config: { auth: 'basic', handler: getAccount } },
   { method: 'PUT', path: '/api/account', config: { auth: 'basic', handler: updateAccount } },
   { method: 'DELETE', path: '/api/account', config: { auth: 'basic', handler: deleteAccount } },
@@ -45,13 +47,14 @@ function ping(req, reply) {
   reply("pong");
 }
 
-function login(req, reply) {
+function signin(req, reply) {
   reply(req.auth.credentials);
 }
 
 function register(req, reply) {
   var email = req.payload['email'];
   var password = req.payload['password'];
+  var type = req.payload['type'];
   
   if (!email || !password) {
     return reply(Hapi.error.badRequest("Enter valid email and password"));
@@ -69,6 +72,7 @@ function register(req, reply) {
   function createAccount() {
     var account = new db.Account();
     account.email = email;
+    account.type = type;
 
     Bcrypt.hash(password, 8, function(err, hash) {
       // Store hash in your password DB.
@@ -76,7 +80,13 @@ function register(req, reply) {
       account.password = hash;
       account.save(function (err, savedAccount) {
         if (err) return reply(Hapi.error.badRequest(err));
-        return reply("Account registered");
+        
+        var res = {};
+        res.email = savedAccount.email;
+        res.profiles = savedAccount.profiles;
+        res.type = savedAccount.type;
+
+        return reply(res);
       });
     });
   };

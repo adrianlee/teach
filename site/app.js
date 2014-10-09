@@ -20,6 +20,11 @@ App.config(function($routeProvider, $locationProvider, $httpProvider) {
     .when('/signin', {
       templateUrl : 'static/pages/signin.html',
       controller  : 'signinController'
+    })
+
+    .when('/profile', {
+      templateUrl : 'static/pages/profile.html',
+      controller  : 'profileController'
     });
 
   //$locationProvider.html5Mode(true);
@@ -53,8 +58,8 @@ App.controller('joinController', function($scope, $http) {
   $scope.showPosition = function(position) {
     var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + position.coords.latitude + "," + position.coords.longitude;
 
-    $http.get(url).
-      success(function(data) {
+    $http.get(url)
+      .success(function(data) {
           if (data && data.results && data.results[2]) {
             $scope.formData.location = data.results[2].formatted_address;
           }
@@ -62,10 +67,38 @@ App.controller('joinController', function($scope, $http) {
   };
 
   $scope.processForm = function() {
-    alert(JSON.stringify($scope.formData));
+    bojap.register($scope.formData, function (err, res) {
+      if (err) return console.log(err);
+      console.log(res);
+    });
   };
 });
 
-App.controller('signinController', function($scope) {
-  $scope.message = 'Contact us! JK. This is just a demo.';
+App.controller('signinController', function($scope, $rootScope, $location) {
+  $scope.credentials = {};
+
+  $scope.processForm = function() {
+    bojap.signin($scope.credentials.email, $scope.credentials.password, function (err, res) {
+      if (err) return console.log(err);
+      console.log(res);
+      $rootScope.loggedIn = true;
+      $location.path('/');
+      $scope.$apply();
+    });
+  };
+});
+
+App.controller('profileController', function($scope) {
+  $scope.formData = {};
+  $scope.credentials = {};
+
+  $scope.processForm = function() {
+    console.log($scope.formData);
+  };
+
+  $scope.changePassword = function() {
+    if ($scope.credentials.oldPassword == $scope.credentials.newPassword) {
+      return console.log("correct");
+    }
+  };
 });

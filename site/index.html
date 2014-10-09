@@ -3,13 +3,46 @@
   <head>
     <title>Teach</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-    <script src="static/app.js"></script>
+    <link rel="stylesheet" href="static/layout.css">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,300' rel='stylesheet' type='text/css'>
   </head>
   <body>
-    <div class="container">
-      <h1><a href="#/"><span>{{ message }}</span></a></h1>
+    <div class="sidebar">
+      <div class="header"><a href="/#/">Bojap</a></div>
+      <div class="menu">
+        <div class="menu-category">MENU</div>
+        <ul>
+          <li><a href=""/>Find a Teacher</a></li>
+          <li><a href=""/>Find a Student</a></li>
+        </ul>
+
+        <div ng-show="loggedIn">
+          <div class="menu-category">PROFILE</div>
+           <ul>
+            <li><a href="#/profile/">Your profile</a></li>
+            <li>Settings</li>
+          </ul>
+
+          <div class="menu-category">Messages</div>
+           <ul>
+            <li>#bojap</li>
+          </ul>
+
+          <!-- 
+          <div class="menu-category">CHATROOM</div>
+           <ul>
+            <li>#bojap</li>
+          </ul>
+           -->
+        </div>
+      </div>
+    </div>
+    <div class="content container-fluid">
       <div ng-view></div>
     </div>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+    <script src="static/superagent.js"></script>
+    <script src="static/client.js"></script>
+    <script src="static/app.js"></script>
   </body>
 </html>
