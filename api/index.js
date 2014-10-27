@@ -1,13 +1,15 @@
 var db = require("./db");
 var Hapi = require('hapi');
 var Bcrypt = require('bcrypt');
+var jwt = require('jsonwebtoken');
+
 var API = {};
 
 API.routes = [
   // General
 	{ method: 'GET', path: '/api', handler: ping },
 
-  // Login & Register
+  // Sign in & Register
   { method: 'GET', path: '/api/signin', config: { auth: 'basic', handler: signin } },
   { method: 'POST', path: '/api/register', handler: register },
   
@@ -17,7 +19,7 @@ API.routes = [
   { method: 'DELETE', path: '/api/account', config: { auth: 'basic', handler: deleteAccount } },
 
   // Profile Resource
-  { method: 'GET', path: '/api/profile', handler: getProfile },
+  { method: 'GET', path: '/api/profile', config: { auth: 'basic', handler: getProfile } },
   { method: 'POST', path: '/api/profile', handler: createProfile },
   { method: 'PUT', path: '/api/profile', handler: updateProfile },
   { method: 'DELETE', path: '/api/profile', handler: deleteProfile },
@@ -37,7 +39,10 @@ API.basicValidateFunc = function (email, password, callback) {
       } else {
         Bcrypt.compare(password, account.password, function (err, isValid) {
           // if valid pass credentials to request handler. access via req.auth.credentials
-          callback(err, isValid, { username: account.username, email: account.email, profiles: account.profiles });
+          // { username: account.username, email: account.email, profiles: account.profiles }
+          var token = jwt.sign({ username: account.username, email: account.email }, 'awesome123!');
+
+          callback(err, isValid, { token: token });
         });
       }
     };
@@ -117,7 +122,11 @@ function deleteAccount(req, reply) {
 }
 
 function getProfile(req, reply) {
-  reply("not implemented");
+  var getAccountWithEmail = req.auth.credentials.email;
+  db.Account.findOne({ email: getAccountWithEmail }).exec(function (err, doc) {
+    if (err) return reply(Hapi.error.badRequest(err));
+    reply(doc);
+  });
 }
 
 function createProfile(req, reply) {

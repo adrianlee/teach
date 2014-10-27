@@ -22,9 +22,9 @@ App.config(function($routeProvider, $locationProvider, $httpProvider) {
       controller  : 'signinController'
     })
 
-    .when('/profile', {
-      templateUrl : 'static/pages/profile.html',
-      controller  : 'profileController'
+    .when('/settings', {
+      templateUrl : 'static/pages/settings.html',
+      controller  : 'settingsController'
     });
 
   //$locationProvider.html5Mode(true);
@@ -37,6 +37,12 @@ App.config(function($routeProvider, $locationProvider, $httpProvider) {
 App.controller('mainController', function($scope) {
   // create a message to display in our view
   $scope.message = 'Find Teacher';
+
+  // Check to see if we are logged in using our token to make a request.
+  if (localStorage["token"]) {
+    console.log(localStorage["token"]);
+    // bojap.getProfile()
+  }
 });
 
 
@@ -80,7 +86,13 @@ App.controller('signinController', function($scope, $rootScope, $location) {
   $scope.processForm = function() {
     bojap.signin($scope.credentials.email, $scope.credentials.password, function (err, res) {
       if (err) return console.log(err);
-      console.log(res);
+
+      // save token
+      if (res && res.token) {
+        localStorage["token"] = res.token;
+      }
+
+      // redirect to homepage
       $rootScope.loggedIn = true;
       $location.path('/');
       $scope.$apply();
@@ -88,9 +100,14 @@ App.controller('signinController', function($scope, $rootScope, $location) {
   };
 });
 
-App.controller('profileController', function($scope) {
+App.controller('settingsController', function($scope) {
   $scope.formData = {};
   $scope.credentials = {};
+
+  bojap.getAccount(function (err, res) {
+    console.log(err);
+    console.log(res);
+  });
 
   $scope.processForm = function() {
     console.log($scope.formData);
