@@ -26,22 +26,29 @@
         return callback({ok: false});
     }
 
-    if (auth) {
+    // we are signing in
+    if (!isEmpty(auth)) {
       r.auth(auth.username, auth.password);
       auth = {};
+    } else {
+      // TODO read token once so we dont hit the localStorage all the time.
+      if (localStorage["token"])
+        r.set('Authorization', 'Bearer ' + localStorage["token"]);
+      
+      if (data)
+        r.send(data);
     }
-
-
-    if (data)
-      r.send(data);
-
-    // TODO read token once
-    if (localStorage["token"])
-      r.set('API-token', localStorage["token"]);
 
     r.set('X-Requested-With', 'XMLHttpRequest');
     r.end(callback);
   }
+
+  exports.ping = function(callback) {
+    r("get", "/api", null, function (res) {
+      if (res.error) return callback(res.error.message);
+      callback(null, res.text == "pong");
+    });
+  };
 
   // Sign in & Register
   exports.signin = function(username, password, callback) {
@@ -49,6 +56,13 @@
     auth.password = password;
 
     r("get", "/api/signin", null, function (res) {
+      if (res.error) return callback(res.error.message);
+      callback(null, res.body);
+    });
+  };
+
+  exports.signout = function(callback) {
+    r("get", "/api/signout", null, function (res) {
       if (res.error) return callback(res.error.message);
       callback(null, res.body);
     });
@@ -107,6 +121,15 @@
     r("del", "/api/profile", null, function (res) {
       console.log(res);
     });
+  }
+
+  function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
   }
 
 })(typeof exports === 'undefined' ? this['bojap'] = {} : exports);

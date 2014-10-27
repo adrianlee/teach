@@ -7,19 +7,20 @@ var API = {};
 
 API.routes = [
   // General
-	{ method: 'GET', path: '/api', handler: ping },
+	{ method: 'GET', path: '/api', config: { auth: 'token', handler: ping } },
 
   // Sign in & Register
   { method: 'GET', path: '/api/signin', config: { auth: 'basic', handler: signin } },
+  { method: 'GET', path: '/api/signout', config: { auth: 'token', handler: signout } },
   { method: 'POST', path: '/api/register', handler: register },
   
   // Account Resource
-  { method: 'GET', path: '/api/account', config: { auth: 'basic', handler: getAccount } },
-  { method: 'PUT', path: '/api/account', config: { auth: 'basic', handler: updateAccount } },
-  { method: 'DELETE', path: '/api/account', config: { auth: 'basic', handler: deleteAccount } },
+  { method: 'GET', path: '/api/account', config: { auth: 'token', handler: getAccount } },
+  { method: 'PUT', path: '/api/account', config: { auth: 'token', handler: updateAccount } },
+  { method: 'DELETE', path: '/api/account', config: { auth: 'token', handler: deleteAccount } },
 
   // Profile Resource
-  { method: 'GET', path: '/api/profile', config: { auth: 'basic', handler: getProfile } },
+  { method: 'GET', path: '/api/profile', config: { auth: 'token', handler: getProfile } },
   { method: 'POST', path: '/api/profile', handler: createProfile },
   { method: 'PUT', path: '/api/profile', handler: updateProfile },
   { method: 'DELETE', path: '/api/profile', handler: deleteProfile },
@@ -55,6 +56,11 @@ function ping(req, reply) {
 function signin(req, reply) {
   reply(req.auth.credentials);
 }
+
+function signout(req, reply) {
+  reply("ok");
+}
+
 
 function register(req, reply) {
   var email = req.payload['email'];

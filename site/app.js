@@ -33,16 +33,33 @@ App.config(function($routeProvider, $locationProvider, $httpProvider) {
   delete $httpProvider.defaults.headers.common['X-Requested-With'];
 });
 
-// create the controller and inject Angular's $scope
-App.controller('mainController', function($scope) {
-  // create a message to display in our view
-  $scope.message = 'Find Teacher';
-
+App.controller('siteController', function ($scope, $rootScope) {
   // Check to see if we are logged in using our token to make a request.
   if (localStorage["token"]) {
     console.log(localStorage["token"]);
     // bojap.getProfile()
+    $rootScope.loggedIn = true;
   }
+
+  bojap.ping(function (err, response) {
+    if (err) return console.log(err);
+
+    if (response == false) {
+      localStorage.removeItem("token");
+    }
+
+    $rootScope.loggedIn = response;
+  });
+
+  $scope.signOut = function () {
+    localStorage.removeItem("token");
+    $rootScope.loggedIn = false;
+  };
+});
+
+// create the controller and inject Angular's $scope
+App.controller('mainController', function($scope, $rootScope) {
+
 });
 
 

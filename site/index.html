@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="static/layout.css">
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,300' rel='stylesheet' type='text/css'>
   </head>
-  <body>
+  <body ng-app="Bojap" ng-controller="siteController">
     <div class="sidebar">
       <div class="header"><a href="/#/">Bojap</a></div>
       <div class="menu">
@@ -19,8 +19,9 @@
         <div ng-show="loggedIn">
           <div class="menu-category">PROFILE</div>
            <ul>
-            <li>Profile</li>
+            <li>Your Profile</li>
             <li><a href="#/settings/">Settings</a></li>
+            <li><a href="#/" ng-click="signOut()">Sign out</a></li>
           </ul>
 
           <div class="menu-category">Messages</div>
